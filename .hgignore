@@ -3,3 +3,12 @@ syntax: glob
 *.obj
 *.so
 *.pyc
+
+syntax: regexp
+
+.*/build/.*
+.*\.so
+.*~
+^build
+.*\.pyc
+
