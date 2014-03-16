@@ -3,4 +3,7 @@ find_package(OpenSlide)
 if(OPENSLIDE_FOUND)
 	include_directories(${OPENSLIDE_INCLUDE_DIRS})
 	target_link_libraries( segment ${OPENSLIDE_LIBRARIES})
-endif (OPENSLIDE_FOUND)
+else()
+	message(FATAL_ERROR "OpenSlide Not Installed or Not Found")
+endif()
+
