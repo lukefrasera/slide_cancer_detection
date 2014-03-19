@@ -1,11 +1,11 @@
 #include "svsconvert.h"
 
-svsconvert::svsconvert(openside_t * file){
-	image = file;
+svsconvert::svsconvert(int * file){
+	// image = file;
 }
 
 svsconvert::~svsconvert(){
-	iamge = NULL;
+	image = NULL;
 }
 
 TIFF * svsconvert::tiff(){

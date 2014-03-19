@@ -6,7 +6,7 @@
 class svsconvert
 {
 public:
-	svsconvert(openslide_t*);
+	svsconvert(int *);
 	~svsconvert();
 
 	// CONVERSION TYPES
