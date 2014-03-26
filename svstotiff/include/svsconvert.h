@@ -22,7 +22,7 @@ public:
 	~svsconvert();
 
 	// CONVERSION TYPES
-	TIFF * tiff();
+	TIFF * tiff(const char *);
 private:
 	openslide_t * image;
 	openslide_header header;
