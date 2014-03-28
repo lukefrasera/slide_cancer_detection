@@ -2,6 +2,8 @@
 
 
 #define TIFF_TILE_SIZE 1024
+#define SVS_LEVEL 2
+#define BITSPERSAMPLE 8
 
 svsconvert::svsconvert( const char * filename){
 	image = openslide_open(filename);
@@ -30,34 +32,51 @@ svsconvert::~svsconvert(){
 TIFF * svsconvert::tiff(const char * filename){
 	TIFF * file;
 	uint32_t * svsbuf;
+	uint32_t * buf;
 
 	// DETERMINE THE NUMBER OF TILES
-	unsigned int NUM_TILES = header.levels->w / TIFF_TILE_SIZE + (header.levels->w % 2);
-	NUM_TILES *= header.levels->h / TIFF_TILE_SIZE + (header.levels->w % 2);
+	unsigned int NUM_TILES_WIDTH	= header.levels[SVS_LEVEL].w / TIFF_TILE_SIZE + (header.levels[SVS_LEVEL].w % 2);
+	unsigned int NUM_TILES_HEIGHT	= header.levels[SVS_LEVEL].h / TIFF_TILE_SIZE + (header.levels[SVS_LEVEL].h % 2);
+	unsigned int NUM_TILES 			= NUM_TILES_WIDTH * NUM_TILES_HEIGHT;
 	unsigned int TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT;
 
+	file = TIFFOpen(filename, "w");
+	if( !file )
+		return NULL;
 	printf("Number of Tiles: %d\n", NUM_TILES);
 	
+	// SET UP IMAGE HEADER
+	TIFFSetField(file, TIFFTAG_IMAGEWIDTH, header.levels[SVS_LEVEL].w);
+	TIFFSetField(file, TIFFTAG_IMAGELENGTH, header.levels[SVS_LEVEL].h);
+	TIFFSetField(file, TIFFTAG_TILEWIDTH, TIFF_TILE_SIZE);
+	TIFFSetField(file, TIFFTAG_TILELENGTH, TIFF_TILE_SIZE);
+	TIFFSetField(file, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+	TIFFSetField(file, TIFFTAG_BITSPERSAMPLE, BITSPERSAMPLE);
+	TIFFSetField(file, TIFFTAG_SAMPLESPERPIXEL, 4);
+	TIFFSetField(file, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
+	TIFFSetField(file, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+	TIFFSetField(file, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+	TIFFSetField(file, TIFFTAG_SOFTWARE, TIFFGetVersion());
 
 	svsbuf = new uint32_t[TIFF_TILE_SIZE * TIFF_TILE_SIZE];
-	for( unsigned int i = 0; i < header.levels[0].w; i += TIFF_TILE_SIZE){
-		for( unsigned int j = 0; j < header.levels[0].h; j += TIFF_TILE_SIZE){
-			// NEED TO HANDLE THE EDGE SITUATION: MUST ONLY READ UP UNTIL THE LIMIT IN IMAGE.W && IMAGE.H
-			TILE_SIZE_WIDTH  = (header.levels[0].w - i > TIFF_TILE_SIZE) ? (TIFF_TILE_SIZE) : (header.levels[0].w - i);
-			TILE_SIZE_HEIGHT = (header.levels[0].h - j > TIFF_TILE_SIZE) ? (TIFF_TILE_SIZE) : (header.levels[0].h - j);
+	buf = (uint32_t*)_TIFFmalloc(sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
 
-			openslide_read_region(image, svsbuf, i, j, 0, TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT);
+	for( unsigned int j = 0; j < header.levels[SVS_LEVEL].h; j += TIFF_TILE_SIZE){
+		for( unsigned int i = 0; i < header.levels[SVS_LEVEL].w; i += TIFF_TILE_SIZE){
+			// NEED TO HANDLE THE EDGE SITUATION: MUST ONLY READ UP UNTIL THE LIMIT IN IMAGE.W && IMAGE.H
+			TILE_SIZE_WIDTH  = (header.levels[SVS_LEVEL].w - i > TIFF_TILE_SIZE) ? (TIFF_TILE_SIZE) : (header.levels[SVS_LEVEL].w - i);
+			TILE_SIZE_HEIGHT = (header.levels[SVS_LEVEL].h - j > TIFF_TILE_SIZE) ? (TIFF_TILE_SIZE) : (header.levels[SVS_LEVEL].h - j);
+
+			openslide_read_region(image, buf, j, i, SVS_LEVEL, TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT);
 
 			// COPY BUFFER TO INTO TIFF TILE
-
-
+			// printf("Tile Number: %d\n", (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE));
+			TIFFWriteEncodedTile(file, (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE), (tdata_t)svsbuf, sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
 		}
 	}
 	delete [] svsbuf;
-			printf("Tile Width : %d ", TILE_SIZE_WIDTH);
-			printf("Tile Height: %d\n", TILE_SIZE_HEIGHT);
-
-	printf("Out of Four loops\n");
+	_TIFFfree(buf);
+	TIFFClose(file);
 
 	return NULL;
 }
