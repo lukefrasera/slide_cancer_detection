@@ -69,9 +69,14 @@ TIFF * svsconvert::tiff(const char * filename){
 
 			openslide_read_region(image, buf, j, i, SVS_LEVEL, TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT);
 
+			printf("Red  :%d\t", (unsigned char)(buf[0] >> 0));
+			printf("Green:%d\t", (unsigned char)(buf[0] >> 8));
+			printf("Blue :%d\t", (unsigned char)(buf[0] >> 16));
+			printf("Aplha:%d\n", (unsigned char)(buf[0] >> 24));
 			// COPY BUFFER TO INTO TIFF TILE
 			// printf("Tile Number: %d\n", (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE));
-			TIFFWriteEncodedTile(file, (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE), (tdata_t)svsbuf, sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
+
+			// TIFFWriteEncodedTile(file, (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE), (tdata_t)svsbuf, sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
 		}
 	}
 	delete [] svsbuf;
