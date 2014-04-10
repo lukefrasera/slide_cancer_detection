@@ -1,8 +1,8 @@
 #include "svsconvert.h"
 
 
-#define TIFF_TILE_SIZE 1024
-#define SVS_LEVEL 2
+#define TIFF_TILE_SIZE 2048
+#define SVS_LEVEL 3
 #define BITSPERSAMPLE 8
 
 svsconvert::svsconvert( const char * filename){
@@ -30,8 +30,7 @@ svsconvert::~svsconvert(){
 }
 
 TIFF * svsconvert::tiff(const char * filename){
-	TIFF * file;
-	uint32_t * svsbuf;
+	TIFF * file, * slide;
 	uint32_t * buf;
 
 	// DETERMINE THE NUMBER OF TILES
@@ -41,6 +40,11 @@ TIFF * svsconvert::tiff(const char * filename){
 	unsigned int TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT;
 
 	file = TIFFOpen(filename, "w");
+	if(slide = TIFFOpen("../CMU-2.svs", "r")) {
+		printf("%s\n", "it opened");
+	}
+
+
 	if( !file )
 		return NULL;
 	printf("Number of Tiles: %d\n", NUM_TILES);
@@ -58,7 +62,6 @@ TIFF * svsconvert::tiff(const char * filename){
 	TIFFSetField(file, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
 	TIFFSetField(file, TIFFTAG_SOFTWARE, TIFFGetVersion());
 
-	svsbuf = new uint32_t[TIFF_TILE_SIZE * TIFF_TILE_SIZE];
 	buf = (uint32_t*)_TIFFmalloc(sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
 
 	for( unsigned int j = 0; j < header.levels[SVS_LEVEL].h; j += TIFF_TILE_SIZE){
@@ -67,19 +70,24 @@ TIFF * svsconvert::tiff(const char * filename){
 			TILE_SIZE_WIDTH  = (header.levels[SVS_LEVEL].w - i > TIFF_TILE_SIZE) ? (TIFF_TILE_SIZE) : (header.levels[SVS_LEVEL].w - i);
 			TILE_SIZE_HEIGHT = (header.levels[SVS_LEVEL].h - j > TIFF_TILE_SIZE) ? (TIFF_TILE_SIZE) : (header.levels[SVS_LEVEL].h - j);
 
-			openslide_read_region(image, buf, j, i, SVS_LEVEL, TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT);
+			// openslide_read_region(image, buf, i, j, SVS_LEVEL, TILE_SIZE_WIDTH, TILE_SIZE_HEIGHT);
+			openslide_read_region(image, buf, i, j, SVS_LEVEL, TIFF_TILE_SIZE, TIFF_TILE_SIZE);
 
-			printf("Red  :%d\t", (unsigned char)(buf[0] >> 0));
-			printf("Green:%d\t", (unsigned char)(buf[0] >> 8));
-			printf("Blue :%d\t", (unsigned char)(buf[0] >> 16));
-			printf("Aplha:%d\n", (unsigned char)(buf[0] >> 24));
+			// for ( int k = 0; k < TIFF_TILE_SIZE * TIFF_TILE_SIZE; k++) {
+			// 	printf("Red  :%d\t", (unsigned char)(buf[k] >> 0));
+			// 	printf("Green:%d\t", (unsigned char)(buf[k] >> 8));
+			// 	printf("Blue :%d\t", (unsigned char)(buf[k] >> 16));
+			// 	printf("Aplha:%d\n", (unsigned char)(buf[k] >> 24));
+			// }
+			// printf("Tile ONE Complete\n");
 			// COPY BUFFER TO INTO TIFF TILE
 			// printf("Tile Number: %d\n", (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE));
 
-			// TIFFWriteEncodedTile(file, (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE), (tdata_t)svsbuf, sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
+			// TIFFWriteEncodedTile(file, (j / TIFF_TILE_SIZE * NUM_TILES_WIDTH) + (i / TIFF_TILE_SIZE), (tdata_t)buf, sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
+			TIFFWriteEncodedTile(file, TIFFComputeTile(file, i, j, 0, 0), (tdata_t)buf, sizeof(uint32_t)*TIFF_TILE_SIZE*TIFF_TILE_SIZE);
 		}
 	}
-	delete [] svsbuf;
+	// delete [] svsbuf;
 	_TIFFfree(buf);
 	TIFFClose(file);
 

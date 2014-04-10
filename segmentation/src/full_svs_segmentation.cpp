@@ -19,6 +19,8 @@ int main( int argc, char* argv[] ){
 
 	// READ ACROSS ENTIRE IMAGE: THRESHOLDING FOR COLOR
 
-	
+		// EDGE DETECTION
+
+
 	return 0;
 }  
