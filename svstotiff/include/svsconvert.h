@@ -1,11 +1,11 @@
 #ifndef SVS_CONVERT_HEADER
 #define SVS_CONVERT_HEADER
 #include "openslide.h"
-#include "tiffio.h"
+#include <tiffio.h>
 
 typedef struct svslevel
 {
-	int64 w,h;
+	int64_t w,h;
 	double downsample;
 }openslide_level;
 

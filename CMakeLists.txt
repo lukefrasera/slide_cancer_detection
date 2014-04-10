@@ -8,6 +8,10 @@ if(NOT OPENSLIDE_FOUND)
 	message(FATAL_ERROR "OpenSlide Not Installed or Not Found")
 endif()
 
+include_directories(
+	${OPENSLIDE_INCLUDE_DIRS}
+)
+
 # INCLUDE SUBDIRECTORIES
 ADD_SUBDIRECTORY(segmentation)
 ADD_SUBDIRECTORY(packingProblem)

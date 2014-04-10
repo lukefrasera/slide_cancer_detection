@@ -1,5 +1,7 @@
+find_package(TIFF)
+
 add_library(svsconvertlib SHARED include/svsconvert.cpp)
-target_link_libraries(svsconvertlib ${OPENSLIDE_LIBRARIES})
+target_link_libraries(svsconvertlib ${OPENSLIDE_LIBRARIES} ${TIFF_LIBRARIES})
 
 add_executable(svsconverter src/svstotiff.cpp)
 include_directories(${OPENSLIDE_INCLUDE_DIRS} include/)
