@@ -1,5 +1,5 @@
 /*
- * full_svs_segmentation.cpp
+ * segmentation.h
  *    Copyright (C) 2014 Luke Fraser
  *
  *    This file is part of TMAker.
@@ -18,14 +18,23 @@
  *    along with TMAker.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "stdlib.h"
-#include <stdio.h>
-#include "openslide/openslide.h"
-#include "opencv2/opencv.hpp"
+// A macro to disallow the copy constructor and operator= functions
+// This should be used in the private: declarations for a class
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+  TypeName(const TypeName&);               \
+  void operator=(const TypeName&)
 
-int main( int argc, char* argv[] ) {
-	// READ ACROSS ENTIRE IMAGE: THRESHOLDING FOR COLOR
+#ifndef SEGMENTATION_SRC_SEGMENTATION_H_
+#define SEGMENTATION_SRC_SEGMENTATION_H_
 
-	// EDGE DETECTION
-	return 0;
-}  
+namespace tma{
+class TmaMaker {
+ public:
+  TmaMaker();
+  ~TmaMaker();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TmaMaker);
+};
+};
+#endif  // SEGMENTATION_SRC_SEGMENTATION_H_
