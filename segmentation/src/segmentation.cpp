@@ -18,7 +18,10 @@
  *    along with TMAker.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "./segmentation.h"
-#include "stdio.h"
+#include <stdio.h>
+#include <vector>
+#include "./sgsmooth.h"
+
 namespace tma {
 TmaMaker::TmaMaker() {}
 TmaMaker::~TmaMaker() {}
@@ -44,22 +47,71 @@ cv::Mat TmaMaker::GetTissueRegionMask(const cv::Mat &image) {
   return bin_mask;
 }
 
-cv::Mat TmaMaker::GetNormalizedHist(const cv::Mat &mask,
+std::vector<float> TmaMaker::GetNormalizedHist(const cv::Mat &mask,
       const cv::Mat &image) {
   cv::Mat hsv;
   cv::cvtColor(image, hsv, CV_RGB2HSV);
   // Calculate histrogram
-  int hbins = 30;
+  int hbins = 90;
   int histsize[] = {hbins};
   float hrange[] = {0, 180};
   const float * ranges[] = {hrange};
   int channels[] = {0};
   cv::Mat hist;
-  // std::vector< cv::Vec2i > hist;
-
   cv::calcHist(&hsv, 1, channels, mask, hist, 1, histsize, ranges, true, false);
-  printf("made it here\n");
+
+  // convert hist to vectors
+  const float * h1 = hist.ptr<float>(0);
+  std::vector<float> vec_hist(h1, h1 + hist.rows);
+
   // normalize histogram
-  return hist;
+  int sum = 0;
+  for (int i = 0; i < vec_hist.size(); ++i) {
+    sum += vec_hist[i];
+  }
+  for (int i = 0; i < vec_hist.size(); ++i) {
+    vec_hist[i] = vec_hist[i]/sum;
+  }
+
+  return vec_hist;
+}
+
+std::vector<float> TmaMaker::GetSmoothHist(const std::vector<float> &data) {
+  // Pass data to smoothing filter
+  int size = data.size();
+  double *d_ptr = NULL;
+  std::vector<float> result;
+  d_ptr = new double[size];
+  if (d_ptr) {
+    for (int i = 0; i < size; ++i) {
+      d_ptr[i] = data[i];
+    }
+    double * smooth_data = calc_sgsmooth(size, d_ptr, 5, 3);
+    delete [] d_ptr;
+
+    // Normalize smoothed data
+    int sum = 0;
+    for (int i = 0; i < size; ++i) {
+      sum += smooth_data[i];
+    }
+    for (int i = 0; i < size; ++i) {
+      result.push_back(smooth_data[i]/sum);
+    }
+  }
+  return result;
+}
+
+int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
+  // Find data derivative
+  std::vector<float> deriv = CentralDifference(data);
+  // Find local maxima based on zero crossings
+  std::vector<int> maxima = FindLocalMaxima(deriv);
+  // threshold above certain value
+  int sum = 0;
+  for (int i = 0; i < maxima.size(); ++i) {
+    if (data[maxima[i]] > thresh)
+      sum++;
+  }
+  return sum;
 }
 };  // namespace tma

@@ -31,12 +31,16 @@ int main( int argc, char* argv[] ) {
 
   cv::Mat image = cv::imread(argv[1]);
   cv::Mat mask = maker.GetTissueRegionMask(image);
-  cv::Mat hist = maker.GetNormalizedHist(mask, image);
-  
-  std::vector<int> compression_param;
-  compression_param.push_back(CV_IMWRITE_JPEG_QUALITY);
-  compression_param.push_back(95);
-  cv::imwrite("test.jpeg", image, compression_param);
+  std::vector<float> hist = maker.GetNormalizedHist(mask, image);
+  std::vector<float> smoothed = maker.GetSmoothHist(hist);
+
+  for (int i = 0; i < hist.size(); ++i) {
+    printf("Original: %f, Smoothed: %f\n", hist[i], smoothed[i]);
+  }
+  // std::vector<int> compression_param;
+  // compression_param.push_back(CV_IMWRITE_JPEG_QUALITY);
+  // compression_param.push_back(95);
+  // cv::imwrite("test.jpeg", image, compression_param);
 	// EDGE DETECTION
 	return 0;
 }  

@@ -37,9 +37,10 @@ class TmaMaker {
   ~TmaMaker();
 
   cv::Mat GetTissueRegionMask(const cv::Mat &image);
-  cv::Mat GetNormalizedHist(const cv::Mat &mask, const cv::Mat &image);
-  std::vector<cv::Point> GetSmoothHist(const std::vector<cv::Point> &data);
-  int GetNumColorGroups(const std::vector<cv::Point> &data);
+  std::vector<float> GetNormalizedHist(const cv::Mat &mask,
+      const cv::Mat &image);
+  std::vector<float> GetSmoothHist(const std::vector<float> &data);
+  int GetNumColorGroups(const std::vector<float> &data);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TmaMaker);

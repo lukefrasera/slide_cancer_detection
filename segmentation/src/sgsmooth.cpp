@@ -577,6 +577,9 @@ float_vect sg_derivative(const float_vect &v, const int width,
     return res;
 }
 
+extern "C" void sgs_error(const char* msg) {
+  printf("ERROR: [%s]\n", msg);
+}
 // Local Variables:
 // mode: c++
 // c-basic-offset: 4
