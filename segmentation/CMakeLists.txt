@@ -1,6 +1,7 @@
-
-add_executable(segment src/full_svs_segmentation.cpp)
-
-include_directories(${OPENSLIDE_INCLUDE_DIRS})
-target_link_libraries( segment ${OPENSLIDE_LIBRARIES})
-
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} src/)
+add_executable(
+  segment src/full_svs_segmentation.cpp
+  src/segmentation.cpp
+)
+target_link_libraries( segment ${OPENSLIDE_LIBRARIES} ${OpenCV_LIBS})

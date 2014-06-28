@@ -14,5 +14,5 @@ include_directories(
 
 # INCLUDE SUBDIRECTORIES
 ADD_SUBDIRECTORY(segmentation)
-ADD_SUBDIRECTORY(packingProblem)
-ADD_SUBDIRECTORY(svstotiff)
+#ADD_SUBDIRECTORY(packingProblem)
+#ADD_SUBDIRECTORY(svstotiff)

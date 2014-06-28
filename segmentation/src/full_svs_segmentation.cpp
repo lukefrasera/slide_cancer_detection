@@ -22,10 +22,21 @@
 #include <stdio.h>
 #include "openslide/openslide.h"
 #include "opencv2/opencv.hpp"
+#include "segmentation.h"
+#include <vector>
 
 int main( int argc, char* argv[] ) {
 	// READ ACROSS ENTIRE IMAGE: THRESHOLDING FOR COLOR
+  tma::TmaMaker maker;
 
+  cv::Mat image = cv::imread(argv[1]);
+  cv::Mat mask = maker.GetTissueRegionMask(image);
+  cv::Mat hist = maker.GetNormalizedHist(mask, image);
+  
+  std::vector<int> compression_param;
+  compression_param.push_back(CV_IMWRITE_JPEG_QUALITY);
+  compression_param.push_back(95);
+  cv::imwrite("test.jpeg", image, compression_param);
 	// EDGE DETECTION
 	return 0;
 }  

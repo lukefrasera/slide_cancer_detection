@@ -20,12 +20,15 @@
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
+#ifndef SEGMENTATION_SRC_SEGMENTATION_H_
+#define SEGMENTATION_SRC_SEGMENTATION_H_
+
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
-#ifndef SEGMENTATION_SRC_SEGMENTATION_H_
-#define SEGMENTATION_SRC_SEGMENTATION_H_
+#include <vector>
+#include "opencv2/opencv.hpp"
 
 namespace tma{
 class TmaMaker {
@@ -33,8 +36,13 @@ class TmaMaker {
   TmaMaker();
   ~TmaMaker();
 
+  cv::Mat GetTissueRegionMask(const cv::Mat &image);
+  cv::Mat GetNormalizedHist(const cv::Mat &mask, const cv::Mat &image);
+  std::vector<cv::Point> GetSmoothHist(const std::vector<cv::Point> &data);
+  int GetNumColorGroups(const std::vector<cv::Point> &data);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TmaMaker);
 };
-};
+};  // namespace tma
 #endif  // SEGMENTATION_SRC_SEGMENTATION_H_
