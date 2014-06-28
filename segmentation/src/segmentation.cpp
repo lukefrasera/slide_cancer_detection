@@ -102,7 +102,7 @@ std::vector<float> TmaMaker::GetSmoothHist(const std::vector<float> &data) {
 }
 
 int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
-  // Find local maxima 
+  // Find local maxima
   std::vector<int> maxima = FindLocalMaxima(data);
   // threshold above certain value
   int sum = 0;
@@ -130,7 +130,7 @@ std::vector<int> TmaMaker::FindLocalMaxima(const std::vector<float> &data) {
 std::vector<float> TmaMaker::CentralDifference(const std::vector<float> &data) {
   // perform central difference
   std::vector<float> result;
-  //Handle Frst boundry condition
+  // Handle Frst boundry condition
   result.push_back(data[1]-data[0]);
   for (int i = 1; i < data.size()-1; ++i) {
     result.push_back((data[i+1] - data[i-1])/2);
