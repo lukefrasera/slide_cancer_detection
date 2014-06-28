@@ -90,7 +90,7 @@ std::vector<float> TmaMaker::GetSmoothHist(const std::vector<float> &data) {
     delete [] d_ptr;
 
     // Normalize smoothed data
-    int sum = 0;
+    float sum = 0;
     for (int i = 0; i < size; ++i) {
       sum += smooth_data[i];
     }
@@ -102,16 +102,41 @@ std::vector<float> TmaMaker::GetSmoothHist(const std::vector<float> &data) {
 }
 
 int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
-  // Find data derivative
-  std::vector<float> deriv = CentralDifference(data);
-  // Find local maxima based on zero crossings
-  std::vector<int> maxima = FindLocalMaxima(deriv);
+  // Find local maxima 
+  std::vector<int> maxima = FindLocalMaxima(data);
   // threshold above certain value
   int sum = 0;
+  float thresh = .0005;
   for (int i = 0; i < maxima.size(); ++i) {
     if (data[maxima[i]] > thresh)
       sum++;
+    printf("Maxima: %f\n", data[maxima[i]]);
   }
   return sum;
+}
+
+std::vector<int> TmaMaker::FindLocalMaxima(const std::vector<float> &data) {
+  // Find the first derivative of he data
+  std::vector<float> deriv = CentralDifference(data);
+  // Find positive to negative zero crossings
+  std::vector<int> result;
+  for (int i = 0; i < deriv.size()-1; ++i) {
+    if (deriv[i] >= 0 && deriv[i+1] < 0)
+      result.push_back(i);
+  }
+  return result;
+}
+
+std::vector<float> TmaMaker::CentralDifference(const std::vector<float> &data) {
+  // perform central difference
+  std::vector<float> result;
+  //Handle Frst boundry condition
+  result.push_back(data[1]-data[0]);
+  for (int i = 1; i < data.size()-1; ++i) {
+    result.push_back((data[i+1] - data[i-1])/2);
+  }
+  // Handle past boundry conditions
+  result.push_back(data[data.size()-1] - data[data.size()-2]);
+  return result;
 }
 };  // namespace tma

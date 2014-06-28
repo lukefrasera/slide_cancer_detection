@@ -43,6 +43,9 @@ class TmaMaker {
   int GetNumColorGroups(const std::vector<float> &data);
 
  private:
+  std::vector<float> CentralDifference(const std::vector<float> &data);
+  std::vector<int> FindLocalMaxima(const std::vector<float> &data);
+
   DISALLOW_COPY_AND_ASSIGN(TmaMaker);
 };
 };  // namespace tma

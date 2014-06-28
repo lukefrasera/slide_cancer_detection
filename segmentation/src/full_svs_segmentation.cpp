@@ -33,10 +33,12 @@ int main( int argc, char* argv[] ) {
   cv::Mat mask = maker.GetTissueRegionMask(image);
   std::vector<float> hist = maker.GetNormalizedHist(mask, image);
   std::vector<float> smoothed = maker.GetSmoothHist(hist);
+  int groups = maker.GetNumColorGroups(smoothed);
 
   for (int i = 0; i < hist.size(); ++i) {
     printf("Original: %f, Smoothed: %f\n", hist[i], smoothed[i]);
   }
+  printf("Groups: %d\n", groups);
   // std::vector<int> compression_param;
   // compression_param.push_back(CV_IMWRITE_JPEG_QUALITY);
   // compression_param.push_back(95);
