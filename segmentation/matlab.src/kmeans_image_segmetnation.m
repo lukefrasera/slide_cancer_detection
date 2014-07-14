@@ -14,7 +14,7 @@ function segmented_images = kmeans_image_segmetnation( filename, iterations )
     nrows = size(ab,1);
     ncols = size(ab,2);
     ab = reshape(ab,nrows*ncols,2);
-    nColors = 3;
+    nColors = 4;
     % repeat the clustering 3 times to avoid local minima
     [cluster_idx, cluster_center] = kmeans(ab,nColors,'distance','sqEuclidean', 'Replicates', iterations);
 

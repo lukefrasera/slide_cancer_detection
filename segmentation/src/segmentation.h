@@ -1,4 +1,4 @@
-/*
+  /*
  * segmentation.h
  *    Copyright (C) 2014 Luke Fraser
  *
@@ -41,9 +41,11 @@ class TmaMaker {
       const cv::Mat &image);
   std::vector<float> GetSmoothHist(const std::vector<float> &data);
   int GetNumColorGroups(const std::vector<float> &data);
+  std::vector<cv::Mat> SegmentImageKMeans(const cv::Mat & image, int iterations);
 
  private:
   std::vector<float> CentralDifference(const std::vector<float> &data);
+  std::vector<float> SgsDerivative(const std::vector<float> &data);
   std::vector<int> FindLocalMaxima(const std::vector<float> &data);
 
   DISALLOW_COPY_AND_ASSIGN(TmaMaker);

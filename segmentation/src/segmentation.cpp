@@ -115,9 +115,14 @@ int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
   return sum;
 }
 
+std::vector<cv::Mat> SegmentImageKMeans(const cv::Mat & image, int iterations) {
+  
+}
+
 std::vector<int> TmaMaker::FindLocalMaxima(const std::vector<float> &data) {
   // Find the first derivative of he data
-  std::vector<float> deriv = CentralDifference(data);
+  // std::vector<float> deriv = CentralDifference(data);
+  std::vector<float> deriv = SgsDerivative(data);
   // Find positive to negative zero crossings
   std::vector<int> result;
   for (int i = 0; i < deriv.size()-1; ++i) {
@@ -137,6 +142,25 @@ std::vector<float> TmaMaker::CentralDifference(const std::vector<float> &data) {
   }
   // Handle past boundry conditions
   result.push_back(data[data.size()-1] - data[data.size()-2]);
+  return result;
+}
+
+std::vector<float> TmaMaker::SgsDerivative(const std::vector<float> &data) {
+  int size = data.size();
+  double * d_ptr = NULL;
+  std::vector<float> result;
+  d_ptr = new double[size];
+  if (d_ptr) {
+    for (int i = 0; i < size; ++i) {
+      d_ptr[i] = data[i];
+    }
+    double * deriv = calc_sgsderiv(size, d_ptr, 9, 8, 1);
+    if (deriv) {
+      for (int i = 0; i < size; ++i) {
+        result.push_back(deriv[i]);
+      }
+    }
+  }
   return result;
 }
 };  // namespace tma
