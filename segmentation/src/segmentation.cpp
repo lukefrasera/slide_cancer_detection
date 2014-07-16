@@ -23,8 +23,14 @@
 #include "./sgsmooth.h"
 
 namespace tma {
-TmaMaker::TmaMaker() {}
+TmaMaker::TmaMaker() {
+  cv::Mat image = NULL;
+}
 TmaMaker::~TmaMaker() {}
+
+void TmaMaker::Init(const cv::Mat &image) {
+  image_ = image;
+}
 // Return a thresheld image mask signifying the tissue regions of a given iamge
 cv::Mat TmaMaker::GetTissueRegionMask(const cv::Mat &image) {
   // Convert image from 8-bit-RGB to 8-bit-single-channel-luminance image
@@ -52,7 +58,7 @@ std::vector<float> TmaMaker::GetNormalizedHist(const cv::Mat &mask,
   cv::Mat hsv;
   cv::cvtColor(image, hsv, CV_RGB2HSV);
   // Calculate histrogram
-  int hbins = 90;
+  int hbins = 60;
   int histsize[] = {hbins};
   float hrange[] = {0, 180};
   const float * ranges[] = {hrange};
@@ -86,7 +92,7 @@ std::vector<float> TmaMaker::GetSmoothHist(const std::vector<float> &data) {
     for (int i = 0; i < size; ++i) {
       d_ptr[i] = data[i];
     }
-    double * smooth_data = calc_sgsmooth(size, d_ptr, 5, 3);
+    double * smooth_data = calc_sgsmooth(size, d_ptr, 20, 5);
     delete [] d_ptr;
 
     // Normalize smoothed data
@@ -106,7 +112,7 @@ int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
   std::vector<int> maxima = FindLocalMaxima(data);
   // threshold above certain value
   int sum = 0;
-  float thresh = .0005;
+  float thresh = .001;
   for (int i = 0; i < maxima.size(); ++i) {
     if (data[maxima[i]] > thresh)
       sum++;
@@ -162,5 +168,12 @@ std::vector<float> TmaMaker::SgsDerivative(const std::vector<float> &data) {
     }
   }
   return result;
+}
+
+void TmaMaker::CellImageSegmentation() {
+  // Find region mask
+  // Get normalized histogram
+  // smooth histrogram
+  // store segmented regions
 }
 };  // namespace tma

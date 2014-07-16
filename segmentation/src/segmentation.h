@@ -35,18 +35,21 @@ class TmaMaker {
  public:
   TmaMaker();
   ~TmaMaker();
-
+  
+  void Init(const cv::Mat &image);)
   cv::Mat GetTissueRegionMask(const cv::Mat &image);
   std::vector<float> GetNormalizedHist(const cv::Mat &mask,
       const cv::Mat &image);
   std::vector<float> GetSmoothHist(const std::vector<float> &data);
   int GetNumColorGroups(const std::vector<float> &data);
-  std::vector<cv::Mat> SegmentImageKMeans(const cv::Mat & image, int iterations);
+  void CellImageSegmentation();
 
  private:
   std::vector<float> CentralDifference(const std::vector<float> &data);
   std::vector<float> SgsDerivative(const std::vector<float> &data);
   std::vector<int> FindLocalMaxima(const std::vector<float> &data);
+  
+  cv::Mat image_;
 
   DISALLOW_COPY_AND_ASSIGN(TmaMaker);
 };
