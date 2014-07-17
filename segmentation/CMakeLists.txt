@@ -5,4 +5,11 @@ add_executable(
   src/segmentation.cpp
   src/sgsmooth.cpp
 )
+add_executable(
+  histogram_seg src/histogramSegmentation.cpp
+  src/segmentation.cpp
+  src/sgsmooth.cpp
+)
+
 target_link_libraries( segment ${OPENSLIDE_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries( histogram_seg ${OPENSLIDE_LIBRARIES} ${OpenCV_LIBS})

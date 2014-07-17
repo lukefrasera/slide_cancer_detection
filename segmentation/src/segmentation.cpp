@@ -24,12 +24,10 @@
 
 namespace tma {
 TmaMaker::TmaMaker() {
-  cv::Mat image = NULL;
 }
 TmaMaker::~TmaMaker() {}
 
 void TmaMaker::Init(const cv::Mat &image) {
-  image_ = image;
 }
 // Return a thresheld image mask signifying the tissue regions of a given iamge
 cv::Mat TmaMaker::GetTissueRegionMask(const cv::Mat &image) {
@@ -121,10 +119,6 @@ int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
   return sum;
 }
 
-std::vector<cv::Mat> SegmentImageKMeans(const cv::Mat & image, int iterations) {
-  
-}
-
 std::vector<int> TmaMaker::FindLocalMaxima(const std::vector<float> &data) {
   // Find the first derivative of he data
   // std::vector<float> deriv = CentralDifference(data);
@@ -175,5 +169,49 @@ void TmaMaker::CellImageSegmentation() {
   // Get normalized histogram
   // smooth histrogram
   // store segmented regions
+}
+
+std::vector<cv::Mat> TmaMaker::HistogramSegmentation(const cv::Mat & image) {
+  // Build histogram
+  int thresh = 0.001;
+  std::vector<cv::Mat> result;
+  cv::Mat hsv;
+  cv::Mat mask = GetTissueRegionMask(image);
+  cv::cvtColor(image, hsv, CV_RGB2HSV);
+  std::vector<float> norm_hist = GetNormalizedHist(mask, image);
+  // Find local maxima and locations in histogram.
+  std::vector<int> local_max = FindLocalMaxima(norm_hist);
+  // Threshold image based on histogram local maxima amounts
+  for (int i = 0; i < local_max.size(); ++i) {
+    if (local_max[i] > thresh) {
+      cv::inRange(hsv, cv::Scalar(local_max[i]-3, 0, 0),
+          cv::Scalar(local_max[i]+3, 255, 255),
+          mask);
+      printf("hello\n");
+      cv::Mat region = image & mask;
+      result.push_back(region);
+    }
+  }
+  return result;
+}
+
+std::vector<cv::Mat> SmoothedHistogramSegmentation() {
+  // Build histrogram
+  // std::vector<float> norm_hist = GetNormalizedHist(image, mask);
+  // Smooth histogram
+
+  // Find local maxima
+
+  // Threshold image based on histrogram local maxima amounts
+
+}
+
+std::vector<cv::Mat> KmeansSegmentation() {
+  // Build histogram
+  // std::vector<float> norm_hist = GetNormalizedHist(image, mask);
+  // Find local maxima
+  // int groups = GetNumColorGroups(norm_hist);
+  // Kmeans segmentation
+
 }
 };  // namespace tma

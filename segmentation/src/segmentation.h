@@ -5,8 +5,8 @@
  *    This file is part of TMAker.
  *
  *    TMAker is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Lesser General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
+ *    it under the terms of the GNU Lesser General Public License as published 
+ *    by the Free Software Foundation, either version 3 of the License, or
  *    (at your option) any later version.
  *
  *    TMAker is distributed in the hope that it will be useful,
@@ -36,13 +36,16 @@ class TmaMaker {
   TmaMaker();
   ~TmaMaker();
   
-  void Init(const cv::Mat &image);)
+  void Init(const cv::Mat &image);
   cv::Mat GetTissueRegionMask(const cv::Mat &image);
   std::vector<float> GetNormalizedHist(const cv::Mat &mask,
       const cv::Mat &image);
   std::vector<float> GetSmoothHist(const std::vector<float> &data);
   int GetNumColorGroups(const std::vector<float> &data);
   void CellImageSegmentation();
+  std::vector<cv::Mat> HistogramSegmentation(const cv::Mat &image);
+  std::vector<cv::Mat> SmoothedHistogramSegmentation();
+  std::vector<cv::Mat> KmeansSegmentation();
 
  private:
   std::vector<float> CentralDifference(const std::vector<float> &data);
