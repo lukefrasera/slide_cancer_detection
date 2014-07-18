@@ -114,7 +114,6 @@ int TmaMaker::GetNumColorGroups(const std::vector<float> &data) {
   for (int i = 0; i < maxima.size(); ++i) {
     if (data[maxima[i]] > thresh)
       sum++;
-    printf("Maxima: %f\n", data[maxima[i]]);
   }
   return sum;
 }
@@ -173,45 +172,106 @@ void TmaMaker::CellImageSegmentation() {
 
 std::vector<cv::Mat> TmaMaker::HistogramSegmentation(const cv::Mat & image) {
   // Build histogram
-  int thresh = 0.001;
+  int thresh = 0.003;
   std::vector<cv::Mat> result;
   cv::Mat hsv;
   cv::Mat mask = GetTissueRegionMask(image);
   cv::cvtColor(image, hsv, CV_RGB2HSV);
-  std::vector<float> norm_hist = GetNormalizedHist(mask, image);
+  std::vector<float> norm_hist = GetNormalizedHist(mask, hsv);
+  cv::Mat mask2;
+  cv::cvtColor(mask, mask2, CV_GRAY2RGB);
+  result.push_back(mask2);
   // Find local maxima and locations in histogram.
   std::vector<int> local_max = FindLocalMaxima(norm_hist);
   // Threshold image based on histogram local maxima amounts
   for (int i = 0; i < local_max.size(); ++i) {
-    if (local_max[i] > thresh) {
-      cv::inRange(hsv, cv::Scalar(local_max[i]-3, 0, 0),
-          cv::Scalar(local_max[i]+3, 255, 255),
+    if (norm_hist[local_max[i]] > thresh) {
+      cv::Mat region;
+      cv::inRange(hsv, cv::Scalar(local_max[i]*3-10, 0, 0),
+          cv::Scalar(local_max[i]*3+10, 255, 255),
           mask);
-      printf("hello\n");
-      cv::Mat region = image & mask;
-      result.push_back(region);
+      cv::cvtColor(mask, region, CV_GRAY2RGB);
+      cv::Mat summer = region & mask2;
+      cv::Scalar sum = cv::sum(summer);
+      region = image & region & mask2;
+      if (sum[0] > 30000000)
+        result.push_back(region);
     }
   }
   return result;
 }
 
-std::vector<cv::Mat> SmoothedHistogramSegmentation() {
-  // Build histrogram
-  // std::vector<float> norm_hist = GetNormalizedHist(image, mask);
-  // Smooth histogram
-
-  // Find local maxima
-
-  // Threshold image based on histrogram local maxima amounts
-
+std::vector<cv::Mat> TmaMaker::SmoothedHistogramSegmentation(
+    const cv::Mat &image) {
+  // Build histogram
+  int thresh = 0.003;
+  std::vector<cv::Mat> result;
+  cv::Mat hsv;
+  cv::Mat mask = GetTissueRegionMask(image);
+  cv::cvtColor(image, hsv, CV_RGB2HSV);
+  std::vector<float> norm_hist = GetNormalizedHist(mask, hsv);
+  std::vector<float> smooth_hist = GetSmoothHist(norm_hist);
+  cv::Mat mask2;
+  cv::cvtColor(mask, mask2, CV_GRAY2RGB);
+  result.push_back(mask2);
+  // Find local maxima and locations in histogram.
+  std::vector<int> local_max = FindLocalMaxima(smooth_hist);
+  // Threshold image based on histogram local maxima amounts
+  for (int i = 0; i < local_max.size(); ++i) {
+    if (smooth_hist[local_max[i]] > thresh) {
+      cv::Mat region;
+      cv::inRange(hsv, cv::Scalar(local_max[i]*3-10, 0, 0),
+          cv::Scalar(local_max[i]*3+10, 255, 255),
+          mask);
+      cv::cvtColor(mask, region, CV_GRAY2RGB);
+      cv::Mat summer = region & mask2;
+      cv::Scalar sum = cv::sum(summer);
+      region = image & region & mask2;
+      if (sum[0] > 30000000)
+        result.push_back(region);
+    }
+  }
+  return result;
 }
 
-std::vector<cv::Mat> KmeansSegmentation() {
+std::vector<cv::Mat> TmaMaker::KmeansSegmentation(const cv::Mat &image) {
+  cv::Mat centers, labels, lab, lab32, data(image.rows * image.cols, 2, CV_32F);
+  std::vector<cv::Mat> result;
   // Build histogram
-  // std::vector<float> norm_hist = GetNormalizedHist(image, mask);
-  // Find local maxima
-  // int groups = GetNumColorGroups(norm_hist);
-  // Kmeans segmentation
+  cv::Mat mask = GetTissueRegionMask(image);
+  std::vector<float> hist = GetNormalizedHist(mask, image);
+  mask.release();
+  int groups = GetNumColorGroups(hist) + 1;
+  printf("Number of Groups: %d\n", groups);
 
+  // Convert lab image into a single column image that passes to kmeans properly
+  cv::cvtColor(image, lab, CV_RGB2Lab);
+  lab.convertTo(lab32, CV_32F);
+  lab.release();
+  for (int i = 0; i < lab32.rows; ++i) {
+    for (int j = 0; j < lab32.cols; ++j) {
+      data.at<float>(j + i*lab32.cols, 0) = lab32.at<cv::Vec3f>(i, j)[1];
+      data.at<float>(j + i*lab32.cols, 1) = lab32.at<cv::Vec3f>(i, j)[2];
+    }
+  }
+  lab32.release();
+  // Kmeans segmentation
+  cv::kmeans(data, groups, labels,
+      cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS, 10, 0.1),
+      5,
+      cv::KMEANS_PP_CENTERS,
+      centers);
+  lab32.release();
+  for (int i = 0; i < groups; ++i) {
+    result.push_back(cv::Mat::zeros(image.rows, image.cols, CV_8UC3));
+  }
+  for (int i = 0; i < image.rows; ++i) {
+    for (int j = 0; j< image.cols; ++j) {
+      int cluster_indx = labels.at<int>(j + i*image.cols, 0);
+      if (cluster_indx <= 2)
+        result[cluster_indx].at<cv::Vec3b>(i, j) = image.at<cv::Vec3b>(i, j);
+    }
+  }
+  return result;
 }
 };  // namespace tma

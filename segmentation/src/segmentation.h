@@ -44,8 +44,8 @@ class TmaMaker {
   int GetNumColorGroups(const std::vector<float> &data);
   void CellImageSegmentation();
   std::vector<cv::Mat> HistogramSegmentation(const cv::Mat &image);
-  std::vector<cv::Mat> SmoothedHistogramSegmentation();
-  std::vector<cv::Mat> KmeansSegmentation();
+  std::vector<cv::Mat> SmoothedHistogramSegmentation(const cv::Mat &image);
+  std::vector<cv::Mat> KmeansSegmentation(const cv::Mat &image);
 
  private:
   std::vector<float> CentralDifference(const std::vector<float> &data);

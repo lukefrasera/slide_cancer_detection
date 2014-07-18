@@ -29,11 +29,12 @@ int main(int argc, char const *argv[]) {
   std::string input_dir = argv[1];
   cv::Mat image = cv::imread(argv[1]);
   std::vector<cv::Mat> regions = maker.HistogramSegmentation(image);
-  for (int i = 0; i < regions.size(); ++i) {
+  for (int i = 0; i < regions.size(); ++i) { 
     char buffer[3];
     std::sprintf(buffer, "%d",i);
     std::string value = buffer;
-    std::string filename = output_dir + "Region_" + value + input_dir.substr(input_dir.find_last_of("\\/"));
+    std::string filename = output_dir + "Region_" + value + "_" + input_dir.substr(input_dir.find_last_of("\\/") + 1);
+    printf("%s\n", filename.c_str());
     cv::imwrite(filename.c_str(), regions[i]);
   }
 	return 0;
